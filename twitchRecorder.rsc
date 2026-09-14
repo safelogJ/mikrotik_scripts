@@ -1,4 +1,4 @@
-:local channelName "dendi"
+:local channelName "rflib_ru"
 :local appId "kimne78kx3ncx6brgo4mv6wki5h1ko"
 :local playlistUrl ""
 :local isBestQuality false
