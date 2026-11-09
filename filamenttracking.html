@@ -358,6 +358,12 @@
                 remMeters: "м остаток",
                 noIpTitle: "Ожидание ввода IP-адреса принтера",
                 noIpSub: "Введите IP-адрес принтера в поле вверху страницы и нажмите «Обновить».",
+                connectingTitle: "Подключение к API Moonraker",
+                connectingSub: "Загрузка истории выполненных задач печати...",
+                fetchErrorTitle: "Не удалось загрузить историю с принтера",
+                fetchErrorSub: "Проверьте IP-адрес принтера или подключение к сети.",
+                emptyHistory: "История печати пуста или недоступна",
+                emptyHistorySub: "Задачи печати не найдены в истории Moonraker API.",
                 otherModels: "Прочие / Тестовые модели",
                 noProfile: "Филамент (Без профиля)",
                 dateUnknown: "Дата неизвестна",
@@ -400,6 +406,12 @@
                 remMeters: "m left",
                 noIpTitle: "Waiting for Printer IP",
                 noIpSub: "Enter the printer IP address in the header and click Refresh.",
+                connectingTitle: "Connecting to Moonraker API",
+                connectingSub: "Fetching print job history...",
+                fetchErrorTitle: "Failed to fetch history from printer",
+                fetchErrorSub: "Check printer IP address or network connection.",
+                emptyHistory: "Print history is empty or unavailable",
+                emptyHistorySub: "No print jobs found in Moonraker API history.",
                 otherModels: "Other / Test models",
                 noProfile: "Filament (No profile)",
                 dateUnknown: "Date unknown",
@@ -533,9 +545,10 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center py-5 text-muted">
-                        <i class="fa-solid fa-spinner fa-spin fa-2x mb-3 d-block"></i>
-                        Connecting to Moonraker API (${escapeHtml(ip)})...
+                    <td colspan="9" class="text-center py-5">
+                        <i class="fa-solid fa-circle-notch fa-spin fa-3x mb-3 text-info d-block"></i>
+                        <span class="text-light fs-6 fw-bold d-block mb-1">${t.connectingTitle} (${escapeHtml(ip)})...</span>
+                        <span class="text-sub small">${t.connectingSub}</span>
                     </td>
                 </tr>`;
 
@@ -553,29 +566,12 @@
 
             } catch (err) {
                 console.error(err);
-                const isHttps = location.protocol === 'https:';
-                let httpsNotice = '';
-
-                if (isHttps) {
-                    httpsNotice = `<div class="mt-3 p-3 bg-dark border border-warning rounded text-start mx-auto" style="max-width: 650px;">
-                        <div class="fw-bold text-warning mb-1"><i class="fa-solid fa-shield-halved me-2"></i>Блокировка смешанного содержимого (HTTPS -> HTTP):</div>
-                        <div class="small text-sub">
-                            Вы открыли страницу через защищённый протокол <code>https://</code> (GitHub Pages), а принтер работает по незашифрованному <code>http://${escapeHtml(ip)}</code>.<br>
-                            Современные браузеры блокируют такие запросы в целях безопасности.<br><br>
-                            <b>Варианты решения:</b><br>
-                            1. Нажмите на иконку замка/настроек сайта слева от адреса страницы в браузере и включите <b>«Незащищённое содержимое» (Insecure content -> Allow)</b>, затем нажмите «Обновить».<br>
-                            2. Или загрузите файл <code>index.html</code> прямо на принтер в Fluidd (раздел Конфигурация) и открывайте его по локальному адресу принтера.
-                        </div>
-                    </div>`;
-                }
-
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="9" class="text-center py-5">
                             <i class="fa-solid fa-triangle-exclamation fa-2x mb-2 text-danger d-block"></i>
-                            <span class="fw-bold fs-6 d-block mb-1 text-danger">Не удалось загрузить историю с принтера (${escapeHtml(ip)}).</span>
-                            <span class="d-block error-subtext">Проверьте IP-адрес принтера, подключение к сети или настройки безопасности браузера.</span>
-                            ${httpsNotice}
+                            <span class="fw-bold fs-6 d-block mb-1 text-danger">${t.fetchErrorTitle} (${escapeHtml(ip)}).</span>
+                            <span class="d-block error-subtext">${t.fetchErrorSub}</span>
                         </td>
                     </tr>`;
             }
@@ -588,8 +584,10 @@
             if (rawHistoryData.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="text-center py-4 text-muted">
-                            Print history is empty or unavailable.
+                        <td colspan="9" class="text-center py-5">
+                            <i class="fa-solid fa-box-open fa-2x mb-3 text-info d-block"></i>
+                            <span class="text-light fs-6 fw-bold d-block mb-1">${t.emptyHistory}</span>
+                            <span class="text-sub small">${t.emptyHistorySub}</span>
                         </td>
                     </tr>`;
                 return;
