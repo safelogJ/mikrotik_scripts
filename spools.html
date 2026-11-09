@@ -472,16 +472,7 @@
         if (noIpSubEl) noIpSubEl.innerText = t.noIpSub;
     }
 
-    // Авто-определение IP принтера (если страница открыта прямо с веб-сервера принтера)
-    window.addEventListener('DOMContentLoaded', () => {
-        const host = location.hostname;
-        const isWebNetwork = host && host !== 'localhost' && host !== '127.0.0.1' && location.protocol !== 'file:';
 
-        if (isWebNetwork) {
-            document.getElementById('printerIp').value = host;
-            fetchHistory();
-        }
-    });
 
     let rawHistoryData = [];
     let totalMoonrakerCount = 0;
