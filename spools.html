@@ -545,7 +545,7 @@
 
         try {
             // Moonraker History API
-            const url = `http://${ip}/server/history/list?limit=10000`;
+            const url = `http://${ip}/server/history/list?limit=10000&order=desc`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Network error: ${response.status}`);
 
