@@ -142,6 +142,17 @@
             font-weight: 700;
         }
 
+        /* Кружок цвета филамента */
+        .color-dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+            flex-shrink: 0;
+        }
+
         .badge-type {
             font-size: 0.75rem;
             padding: 5px 10px;
@@ -472,8 +483,6 @@
         if (noIpSubEl) noIpSubEl.innerText = t.noIpSub;
     }
 
-
-
     let rawHistoryData = [];
     let totalMoonrakerCount = 0;
 
@@ -597,6 +606,20 @@
             let rawFilamentName = (meta.filament_name || '').trim();
             let filamentType = (meta.filament_type || '').trim();
 
+            // Извлечение цвета катушки из preset_colours или filament_color / color
+            let colorHex = '#ffffff';
+            if (Array.isArray(meta.preset_colours) && meta.preset_colours.length > 0 && meta.preset_colours[0]) {
+                colorHex = meta.preset_colours[0];
+            } else if (meta.filament_color) {
+                colorHex = meta.filament_color;
+            } else if (meta.color) {
+                colorHex = meta.color;
+            }
+
+            if (colorHex && !colorHex.startsWith('#')) {
+                colorHex = '#' + colorHex;
+            }
+
             if (!rawFilamentName) {
                 if (filamentType) {
                     rawFilamentName = `${t.noProfile} (${filamentType})`;
@@ -633,6 +656,7 @@
                     spoolId: parsedInfo.spoolId,
                     displayName: parsedInfo.displayName,
                     type: filamentType,
+                    colorHex: colorHex || '#ffffff',
                     initialWeight: parsedInfo.initialWeight,
                     jobsCount: 0,
                     usedGrams: 0,
@@ -643,6 +667,10 @@
                 // Обновляем отображаемое имя на более длинное/полное при наличии
                 if (parsedInfo.displayName.length > spoolsMap[parsedInfo.groupKey].displayName.length) {
                     spoolsMap[parsedInfo.groupKey].displayName = parsedInfo.displayName;
+                }
+                // Если цвет был белым, а у более свежей печати есть явный цвет — обновим его
+                if ((spoolsMap[parsedInfo.groupKey].colorHex === '#ffffff' || !spoolsMap[parsedInfo.groupKey].colorHex) && colorHex && colorHex !== '#ffffff') {
+                    spoolsMap[parsedInfo.groupKey].colorHex = colorHex;
                 }
                 // Фиксируем самую последнюю дату печати для этой катушки
                 if (jobTime > spoolsMap[parsedInfo.groupKey].lastPrintTime) {
@@ -698,12 +726,16 @@
 
             const idBadge = item.spoolId ? `<span class="badge-id">${escapeHtml(item.spoolId)}</span>` : '<span class="text-muted small"></span>';
             const formattedLastDate = formatDate(item.lastPrintTime);
+            const spoolColor = item.colorHex || '#ffffff';
 
             html += `
                 <tr>
                     <td>${idBadge}</td>
                     <td>
-                        <div class="filament-title">${escapeHtml(item.displayName)}</div>
+                        <div class="filament-title d-flex align-items-center gap-2">
+                            <span class="color-dot" style="background-color: ${spoolColor};" title="Цвет филамента: ${spoolColor}"></span>
+                            <span>${escapeHtml(item.displayName)}</span>
+                        </div>
                         <div class="last-print-date"><i class="fa-regular fa-clock me-1"></i>${t.lastPrint}${formattedLastDate}</div>
                     </td>
                     <td><span class="badge badge-type ${badgeColor}">${escapeHtml(item.type)}</span></td>
