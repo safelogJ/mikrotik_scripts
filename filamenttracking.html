@@ -187,6 +187,11 @@
             color: #94a3b8;
             margin-top: 3px;
         }
+
+        .error-subtext {
+            color: #ff9999 !important;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -530,7 +535,7 @@
                 <tr>
                     <td colspan="9" class="text-center py-5 text-muted">
                         <i class="fa-solid fa-spinner fa-spin fa-2x mb-3 d-block"></i>
-                        Connecting to Moonraker API (${ip})...
+                        Connecting to Moonraker API (${escapeHtml(ip)})...
                     </td>
                 </tr>`;
 
@@ -548,12 +553,29 @@
 
             } catch (err) {
                 console.error(err);
+                const isHttps = location.protocol === 'https:';
+                let httpsNotice = '';
+
+                if (isHttps) {
+                    httpsNotice = `<div class="mt-3 p-3 bg-dark border border-warning rounded text-start mx-auto" style="max-width: 650px;">
+                        <div class="fw-bold text-warning mb-1"><i class="fa-solid fa-shield-halved me-2"></i>Блокировка смешанного содержимого (HTTPS -> HTTP):</div>
+                        <div class="small text-sub">
+                            Вы открыли страницу через защищённый протокол <code>https://</code> (GitHub Pages), а принтер работает по незашифрованному <code>http://${escapeHtml(ip)}</code>.<br>
+                            Современные браузеры блокируют такие запросы в целях безопасности.<br><br>
+                            <b>Варианты решения:</b><br>
+                            1. Нажмите на иконку замка/настроек сайта слева от адреса страницы в браузере и включите <b>«Незащищённое содержимое» (Insecure content -> Allow)</b>, затем нажмите «Обновить».<br>
+                            2. Или загрузите файл <code>index.html</code> прямо на принтер в Fluidd (раздел Конфигурация) и открывайте его по локальному адресу принтера.
+                        </div>
+                    </div>`;
+                }
+
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="text-center py-5 text-danger">
-                            <i class="fa-solid fa-triangle-exclamation fa-2x mb-2 d-block"></i>
-                            Failed to fetch history from printer (${ip}).<br>
-                            <small class="text-muted">Check printer IP address or network connection.</small>
+                        <td colspan="9" class="text-center py-5">
+                            <i class="fa-solid fa-triangle-exclamation fa-2x mb-2 text-danger d-block"></i>
+                            <span class="fw-bold fs-6 d-block mb-1 text-danger">Не удалось загрузить историю с принтера (${escapeHtml(ip)}).</span>
+                            <span class="d-block error-subtext">Проверьте IP-адрес принтера, подключение к сети или настройки безопасности браузера.</span>
+                            ${httpsNotice}
                         </td>
                     </tr>`;
             }
