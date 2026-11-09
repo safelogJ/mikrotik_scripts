@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QIDI Q2</title>
     <!-- Bootstrap 5 CSS & FontAwesome Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous">
     <style>
         :root {
             --bg-dark: #121418;
@@ -231,8 +231,8 @@
         <!-- Правая группа: IP Принтера + Кнопка Обновить -->
         <div class="d-flex align-items-center gap-3">
             <div class="input-group input-group-sm">
-                <span class="input-group-text bg-dark text-light border-secondary" id="labelPrinterIp">IP Принтера:</span>
-                <input type="text" id="printerIp" aria-labelledby="labelPrinterIp" class="form-control bg-dark text-light border-secondary" placeholder="например: 192.168.88.211" style="width: 190px;">
+                <label for="printerIp" class="input-group-text bg-dark text-light border-secondary" id="labelPrinterIp">IP Принтера:</label>
+                <input type="text" id="printerIp" aria-label="IP Принтера" class="form-control bg-dark text-light border-secondary" placeholder="например: 192.168.88.211" style="width: 190px;">
                 <button class="btn btn-primary btn-sm refresh-btn" onclick="fetchHistory()">
                     <i class="fa-solid fa-rotate me-1"></i> <span id="refreshBtnText">Обновить</span>
                 </button>
@@ -296,7 +296,8 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check me-2"></i><span id="tableHeaderTitle">Расход филамента по катушкам</span></h5>
         <div class="d-flex gap-2">
-            <input type="text" id="searchInput" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Поиск по катушке или ID..." onkeyup="filterTable()">
+            <label for="searchInput" class="visually-hidden">Поиск по катушке или ID</label>
+            <input type="text" id="searchInput" aria-label="Поиск по катушке или ID" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Поиск по катушке или ID..." onkeyup="filterTable()">
         </div>
     </div>
 
