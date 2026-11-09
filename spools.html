@@ -718,11 +718,11 @@
                     <td><span class="badge badge-type ${badgeColor}">${escapeHtml(item.type)}</span></td>
                     <td class="text-center"><span class="badge bg-dark border border-secondary">${item.jobsCount}</span></td>
                     <td class="fw-bold text-warning">${item.usedGrams.toFixed(1)} ${t.unitGrams}</td>
-                    <td class="text-muted">${item.usedMeters.toFixed(1)} ${t.unitMeters}</td>
+                    <td class="fw-bold text-warning">${item.usedMeters.toFixed(1)} ${t.unitMeters}</td>
                     <td class="fw-bold text-info">${initialWeight} ${t.unitGrams}</td>
                     <td>
                         <span class="fw-bold ${remainingGrams < 100 ? 'text-danger' : 'text-success'}">${remainingGrams.toFixed(1)} ${t.unitGrams}</span>
-                        <small class="text-muted d-block">${remainingMeters.toFixed(1)} ${t.remMeters}</small>
+                        <small class="fw-bold d-block ${remainingGrams < 100 ? 'text-danger' : 'text-success'}">${remainingMeters.toFixed(1)} ${t.remMeters}</small>
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
