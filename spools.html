@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QIDI Q2 — Учёт расхода филамента по катушкам</title>
+    <!-- Bootstrap 5 CSS & FontAwesome Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121418;
+            --card-bg: #1c1f26;
+            --border-color: #2d323e;
+            --accent-blue: #0d6efd;
+            --accent-cyan: #38bdf8;
+            --accent-green: #198754;
+            --accent-warning: #ffc107;
+            --accent-danger: #dc3545;
+            --text-main: #f8fafc;
+            --text-sub: #cbd5e1;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding-bottom: 50px;
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Выравнивание контрастности плейсхолдера инпута IP */
+        #printerIp::placeholder {
+            color: #94a3b8 !important;
+            opacity: 0.85 !important;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .kpi-title {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .instructions-box {
+            background-color: #1e2532;
+            border: 1px solid #333d52;
+            border-radius: 12px;
+            padding: 20px 24px;
+            color: var(--text-sub);
+        }
+
+        .instructions-box h6 {
+            color: var(--accent-cyan);
+            font-size: 1rem;
+        }
+
+        .instructions-box p {
+            color: #cbd5e1;
+            font-size: 0.92rem;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        .example-tag {
+            background-color: #11151c;
+            color: #38bdf8;
+            border: 1px solid #2b354a;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .table-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Выравнивание тёмной темы таблицы Bootstrap 5 */
+        .table-dark {
+            --bs-table-bg: #1c1f26;
+            --bs-table-hover-bg: #252a36;
+            --bs-table-border-color: #2d323e;
+            color: #e2e8f0;
+        }
+
+        .table-dark thead th {
+            background-color: #14171d !important;
+            border-bottom: 2px solid #2d323e;
+            color: #38bdf8;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            font-weight: 700;
+        }
+
+        .table-dark tbody td {
+            background-color: #1c1f26;
+            border-bottom: 1px solid #2d323e;
+            padding: 14px 16px;
+            vertical-align: middle;
+            color: #e2e8f0;
+        }
+
+        .table-dark tbody tr:hover td {
+            background-color: #242833;
+        }
+
+        .filament-title {
+            color: #ffffff !important;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .badge-type {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .badge-id {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background-color: #2b303c;
+            border: 1px solid #3f4758;
+            color: #38bdf8;
+            font-weight: 700;
+        }
+
+        .progress {
+            background-color: #2a2f3d;
+            height: 10px;
+            border-radius: 5px;
+        }
+
+        .refresh-btn, .lang-btn {
+            border-radius: 8px;
+        }
+
+        .youtube-btn {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .youtube-btn:hover {
+            background-color: #ff0000;
+            border-color: #ff0000;
+            color: #fff;
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.4);
+        }
+
+        .last-print-date {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        .error-subtext {
+            color: #ff9999 !important;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Навбар -->
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+
+        <!-- Левая группа: Заголовок + Ссылка на YouTube + Переключатель Языка -->
+        <div class="d-flex align-items-center gap-3">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2 mb-0" href="#">
+                <i class="fa-solid fa-compact-disc text-primary"></i>
+                <span id="navTitle">QIDI Q2 — Учёт расхода филамента по катушкам</span>
+            </a>
+
+            <a href="https://www.youtube.com/@safelogj" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm youtube-btn d-flex align-items-center gap-2 ms-1">
+                <i class="fa-brands fa-youtube fa-lg"></i>
+                <span>YouTube</span>
+            </a>
+
+            <button class="btn btn-outline-secondary btn-sm lang-btn text-light fw-bold ms-1" onclick="toggleLanguage()">
+                <i class="fa-solid fa-globe me-1"></i> <span id="langLabel">EN</span>
+            </button>
+        </div>
+
+        <!-- Правая группа: IP Принтера + Кнопка Обновить -->
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-dark text-light border-secondary" id="labelPrinterIp">IP Принтера:</span>
+                <input type="text" id="printerIp" aria-labelledby="labelPrinterIp" class="form-control bg-dark text-light border-secondary" placeholder="например: 192.168.88.211" style="width: 190px;">
+                <button class="btn btn-primary btn-sm refresh-btn" onclick="fetchHistory()">
+                    <i class="fa-solid fa-rotate me-1"></i> <span id="refreshBtnText">Обновить</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</nav>
+
+<div class="container-fluid px-4">
+
+    <!-- Подсказка по наименованию в слайсере -->
+    <div class="instructions-box mb-4 d-flex align-items-start gap-3">
+        <i class="fa-solid fa-lightbulb text-warning fa-xl mt-2"></i>
+        <div>
+            <h6 class="fw-bold mb-2"><i class="fa-solid fa-gear me-1"></i><span id="instructionsHeader">Формат наименования профиля в слайсере (QIDI Studio / OrcaSlicer):</span></h6>
+            <p>
+                <span id="instructionsText">Для автоматической группировки укажите имя профиля филамента в слайсере в формате:</span>
+                <span class="example-tag">id 1 Имя Профиля W1000</span> или
+                <span class="example-tag">id 2 PETG White W750</span>.<br>
+                • <b class="text-info">id 1</b> — <span id="instructionId">уникальный номер катушки (объединяет все печати этой катушки).</span><br>
+                • <b class="text-info">W1000</b> — <span id="instructionWeight">начальный вес катушки в граммах (например: 1000г, 750г, 250г). По умолчанию 1000г.</span><br>
+                • <b class="text-info"><span id="instructionSortTag">Сортировка:</span></b> <span id="instructionSort">Таблица автоматически сортирует катушки по времени последней печати (самые свежие сверху).</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- KPI Карточки суммарной статистики -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-spool text-info me-2"></i><span id="kpiSpoolsTitle">Катушек в учёте</span></div>
+                <div class="kpi-value text-info" id="kpiTotalSpools">0</div>
+                <div class="small text-muted mt-1" id="kpiActiveTypes">Типов филамента: 0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-weight-hanging text-warning me-2"></i><span id="kpiUsedTitle">Весь израсходованный филамент</span></div>
+                <div class="kpi-value text-warning" id="kpiTotalWeight">0.00 кг</div>
+                <div class="small text-muted mt-1" id="kpiTotalLength">0.0 м</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-print text-success me-2"></i><span id="kpiJobsTitle">Всего задач печати</span></div>
+                <div class="kpi-value text-success" id="kpiTotalJobs">0</div>
+                <div class="small text-muted mt-1" id="kpiJobsSub">Записей в истории Moonraker</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-clock text-primary me-2"></i><span id="kpiTimeTitle">Общее время работы</span></div>
+                <div class="kpi-value text-primary" id="kpiTotalTime">0ч 0м</div>
+                <div class="small text-muted mt-1" id="kpiTimeSub">По данным Moonraker API</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Поиск -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check me-2"></i><span id="tableHeaderTitle">Расход филамента по катушкам</span></h5>
+        <div class="d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Поиск по катушке или ID..." onkeyup="filterTable()">
+        </div>
+    </div>
+
+    <!-- Таблица расхода филамента -->
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle" id="spoolsTable">
+                <thead>
+                <tr>
+                    <th style="width: 80px;" id="colId">ID</th>
+                    <th id="colName">Название профиля / Катушки</th>
+                    <th id="colType">Тип</th>
+                    <th id="colJobs">Задач</th>
+                    <th id="colUsedGrams">Потрачено (Граммы)</th>
+                    <th id="colUsedMeters">Потрачено (Метры)</th>
+                    <th id="colStartWeight">Начальный вес</th>
+                    <th id="colRemaining">Остаток (Граммы / Метры)</th>
+                    <th style="width: 180px;" id="colBar">Шкала остатка</th>
+                </tr>
+                </thead>
+                <tbody id="spoolsTbody">
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <i class="fa-solid fa-network-wired fa-2x mb-3 text-info d-block"></i>
+                        <span class="text-light fs-6 fw-bold d-block mb-1" id="noIpTitle">Ожидание ввода IP-адреса принтера</span>
+                        <span class="text-sub small" id="noIpSub">Введите IP-адрес принтера в поле вверху страницы и нажмите «Обновить».</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- JavaScript логика -->
+<script>
+    // Словарь переводов RU / EN
+    const i18n = {
+        ru: {
+            navTitle: "QIDI Q2 — Учёт расхода филамента по катушкам",
+            ipLabel: "IP Принтера:",
+            ipPlaceholder: "например: 192.168.88.211",
+            refreshBtnText: "Обновить",
+            instructionsHeader: "Формат наименования профиля в слайсере (QIDI Studio / OrcaSlicer):",
+            instructionsText: "Для автоматической группировки укажите имя профиля филамента в слайсере в формате:",
+            instructionId: "уникальный номер катушки (объединяет все печати этой катушки).",
+            instructionWeight: "начальный вес катушки в граммах (например: 1000г, 750г, 250г). По умолчанию 1000г.",
+            instructionSortTag: "Сортировка:",
+            instructionSort: "Таблица автоматически сортирует катушки по времени последней печати (самые свежие сверху).",
+            kpiSpoolsTitle: "Катушек в учёте",
+            kpiTypesPrefix: "Типов филамента: ",
+            kpiUsedTitle: "Весь израсходованный филамент",
+            kpiJobsTitle: "Всего задач печати",
+            kpiJobsSub: "Записей в истории Moonraker",
+            kpiTimeTitle: "Общее время работы",
+            kpiTimeSub: "По данным Moonraker API",
+            tableHeaderTitle: "Расход филамента по катушкам",
+            searchPlaceholder: "Поиск по катушке или ID...",
+            colId: "ID",
+            colName: "Название профиля / Катушки",
+            colType: "Тип",
+            colJobs: "Задач",
+            colUsedGrams: "Потрачено (Граммы)",
+            colUsedMeters: "Потрачено (Метры)",
+            colStartWeight: "Начальный вес",
+            colRemaining: "Остаток (Граммы / Метры)",
+            colBar: "Шкала остатка",
+            lastPrint: "Посл. печать: ",
+            remMeters: "м остаток",
+            noIpTitle: "Ожидание ввода IP-адреса принтера",
+            noIpSub: "Введите IP-адрес принтера в поле вверху страницы и нажмите «Обновить».",
+            connectingTitle: "Подключение к API Moonraker",
+            connectingSub: "Загрузка истории выполненных задач печати...",
+            fetchErrorTitle: "Не удалось загрузить историю с принтера",
+            fetchErrorSub: "Проверьте IP-адрес принтера или подключение к сети.",
+            emptyHistory: "История печати пуста или недоступна",
+            emptyHistorySub: "Задачи печати не найдены в истории Moonraker API.",
+            otherModels: "Прочие / Тестовые модели",
+            noProfile: "Филамент (Без профиля)",
+            dateUnknown: "Дата неизвестна",
+            unitGrams: "г",
+            unitMeters: "м",
+            unitKg: "кг",
+            unitHours: "ч",
+            unitMinutes: "м"
+        },
+        en: {
+            navTitle: "QIDI Q2 — Filament Spool Tracker",
+            ipLabel: "Printer IP:",
+            ipPlaceholder: "e.g.: 192.168.88.211",
+            refreshBtnText: "Refresh",
+            instructionsHeader: "Slicer Profile Naming Format (QIDI Studio / OrcaSlicer):",
+            instructionsText: "For automatic grouping, specify the filament profile name in your slicer as:",
+            instructionId: "unique spool ID (groups all prints for this spool).",
+            instructionWeight: "initial spool weight in grams (e.g. 1000g, 750g, 250g). Default: 1000g.",
+            instructionSortTag: "Sorting:",
+            instructionSort: "Table automatically sorts spools by last print time (most recent first).",
+            kpiSpoolsTitle: "Tracked Spools",
+            kpiTypesPrefix: "Filament Types: ",
+            kpiUsedTitle: "Total Filament Used",
+            kpiJobsTitle: "Total Print Jobs",
+            kpiJobsSub: "Records in Moonraker History",
+            kpiTimeTitle: "Total Operating Time",
+            kpiTimeSub: "From Moonraker API",
+            tableHeaderTitle: "Filament Usage by Spools",
+            searchPlaceholder: "Search spool or ID...",
+            colId: "ID",
+            colName: "Profile Name / Spool",
+            colType: "Type",
+            colJobs: "Jobs",
+            colUsedGrams: "Used (Grams)",
+            colUsedMeters: "Used (Meters)",
+            colStartWeight: "Initial Weight",
+            colRemaining: "Remaining (Grams / Meters)",
+            colBar: "Remaining Gauge",
+            lastPrint: "Last print: ",
+            remMeters: "m left",
+            noIpTitle: "Waiting for Printer IP",
+            noIpSub: "Enter the printer IP address in the header and click Refresh.",
+            connectingTitle: "Connecting to Moonraker API",
+            connectingSub: "Fetching print job history...",
+            fetchErrorTitle: "Failed to fetch history from printer",
+            fetchErrorSub: "Check printer IP address or network connection.",
+            emptyHistory: "Print history is empty or unavailable",
+            emptyHistorySub: "No print jobs found in Moonraker API history.",
+            otherModels: "Other / Test models",
+            noProfile: "Filament (No profile)",
+            dateUnknown: "Date unknown",
+            unitGrams: "g",
+            unitMeters: "m",
+            unitKg: "kg",
+            unitHours: "h",
+            unitMinutes: "m"
+        }
+    };
+
+    let currentLang = 'ru';
+
+    function toggleLanguage() {
+        currentLang = (currentLang === 'ru') ? 'en' : 'ru';
+        document.getElementById('langLabel').innerText = (currentLang === 'ru') ? 'EN' : 'RU';
+        updateLanguageUI();
+        renderTable();
+    }
+
+    function updateLanguageUI() {
+        const t = i18n[currentLang];
+        document.getElementById('navTitle').innerText = t.navTitle;
+        document.getElementById('labelPrinterIp').innerText = t.ipLabel;
+        document.getElementById('printerIp').placeholder = t.ipPlaceholder;
+        document.getElementById('refreshBtnText').innerText = t.refreshBtnText;
+
+        document.getElementById('instructionsHeader').innerText = t.instructionsHeader;
+        document.getElementById('instructionsText').innerText = t.instructionsText;
+        document.getElementById('instructionId').innerText = t.instructionId;
+        document.getElementById('instructionWeight').innerText = t.instructionWeight;
+        document.getElementById('instructionSortTag').innerText = t.instructionSortTag;
+        document.getElementById('instructionSort').innerText = t.instructionSort;
+
+        document.getElementById('kpiSpoolsTitle').innerText = t.kpiSpoolsTitle;
+        document.getElementById('kpiUsedTitle').innerText = t.kpiUsedTitle;
+        document.getElementById('kpiJobsTitle').innerText = t.kpiJobsTitle;
+        document.getElementById('kpiJobsSub').innerText = t.kpiJobsSub;
+        document.getElementById('kpiTimeTitle').innerText = t.kpiTimeTitle;
+        document.getElementById('kpiTimeSub').innerText = t.kpiTimeSub;
+
+        document.getElementById('tableHeaderTitle').innerText = t.tableHeaderTitle;
+        document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+
+        document.getElementById('colId').innerText = t.colId;
+        document.getElementById('colName').innerText = t.colName;
+        document.getElementById('colType').innerText = t.colType;
+        document.getElementById('colJobs').innerText = t.colJobs;
+        document.getElementById('colUsedGrams').innerText = t.colUsedGrams;
+        document.getElementById('colUsedMeters').innerText = t.colUsedMeters;
+        document.getElementById('colStartWeight').innerText = t.colStartWeight;
+        document.getElementById('colRemaining').innerText = t.colRemaining;
+        document.getElementById('colBar').innerText = t.colBar;
+
+        const noIpTitleEl = document.getElementById('noIpTitle');
+        if (noIpTitleEl) noIpTitleEl.innerText = t.noIpTitle;
+        const noIpSubEl = document.getElementById('noIpSub');
+        if (noIpSubEl) noIpSubEl.innerText = t.noIpSub;
+    }
+
+    // Авто-определение IP принтера (если страница открыта прямо с веб-сервера принтера)
+    window.addEventListener('DOMContentLoaded', () => {
+        const host = location.hostname;
+        const isWebNetwork = host && host !== 'localhost' && host !== '127.0.0.1' && location.protocol !== 'file:';
+
+        if (isWebNetwork) {
+            document.getElementById('printerIp').value = host;
+            fetchHistory();
+        }
+    });
+
+    let rawHistoryData = [];
+    let totalMoonrakerCount = 0;
+
+    /**
+     * Парсинг названия профиля на ID катушки и начальный вес в граммах (W1000)
+     * Пример: "id 1 Generic PLA @Qidi Q2 0.4 nozzle - PLA 1 W1000"
+     * -> spoolId: "ID 1", initialWeight: 1000, groupKey: "id 1"
+     */
+    function parseFilamentInfo(fullName) {
+        const nameStr = (fullName || '').trim();
+
+        // Поиск ID катушки ("id 1", "id 02", "ID 10")
+        const idMatch = nameStr.match(/\bid\s*(\d+)\b/i);
+        const spoolId = idMatch ? `ID ${parseInt(idMatch[1], 10)}` : null;
+
+        // Поиск веса катушки ("W1000", "W750", "w250")
+        const weightMatch = nameStr.match(/\bw(\d{3,4})\b/i);
+        const initialWeight = weightMatch ? parseInt(weightMatch[1], 10) : 1000;
+
+        // Ключ для группировки: если есть ID — группируем по "id X", иначе по целому имени
+        const groupKey = spoolId ? spoolId.toLowerCase() : nameStr.toLowerCase();
+
+        return {
+            groupKey: groupKey,
+            spoolId: spoolId,
+            displayName: nameStr,
+            initialWeight: initialWeight
+        };
+    }
+
+    function formatDate(timestamp) {
+        const t = i18n[currentLang];
+        if (!timestamp || timestamp <= 0) return t.dateUnknown;
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleString(currentLang === 'ru' ? 'ru-RU' : 'en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    async function fetchHistory() {
+        const ip = document.getElementById('printerIp').value.trim();
+        const tbody = document.getElementById('spoolsTbody');
+        const t = i18n[currentLang];
+
+        if (!ip) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <i class="fa-solid fa-circle-exclamation fa-2x mb-2 text-warning d-block"></i>
+                        <span class="text-light fs-6 fw-bold d-block mb-1">${t.noIpTitle}</span>
+                        <span class="text-sub small">${t.noIpSub}</span>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-5">
+                    <i class="fa-solid fa-circle-notch fa-spin fa-3x mb-3 text-info d-block"></i>
+                    <span class="text-light fs-6 fw-bold d-block mb-1">${t.connectingTitle} (${escapeHtml(ip)})...</span>
+                    <span class="text-sub small">${t.connectingSub}</span>
+                </td>
+            </tr>`;
+
+        try {
+            // Moonraker History API
+            const url = `http://${ip}/server/history/list?limit=10000`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Network error: ${response.status}`);
+
+            const data = await response.json();
+            rawHistoryData = data.result?.jobs || [];
+            totalMoonrakerCount = data.result?.count || rawHistoryData.length;
+
+            renderTable();
+
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <i class="fa-solid fa-triangle-exclamation fa-2x mb-2 text-danger d-block"></i>
+                        <span class="fw-bold fs-6 d-block mb-1 text-danger">${t.fetchErrorTitle} (${escapeHtml(ip)}).</span>
+                        <span class="d-block error-subtext">${t.fetchErrorSub}</span>
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('spoolsTbody');
+        const t = i18n[currentLang];
+
+        if (rawHistoryData.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <i class="fa-solid fa-box-open fa-2x mb-3 text-info d-block"></i>
+                        <span class="text-light fs-6 fw-bold d-block mb-1">${t.emptyHistory}</span>
+                        <span class="text-sub small">${t.emptyHistorySub}</span>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        // Группировка всех печатей по уникальному ключу (ID катушки или имени)
+        const spoolsMap = {};
+        let totalWeightGramsAll = 0;
+        let totalLengthMetersAll = 0;
+        let totalTimeSecondsAll = 0;
+
+        rawHistoryData.forEach(job => {
+            const meta = job.metadata || {};
+
+            // Извлечение чистого имени и типа
+            let rawFilamentName = (meta.filament_name || '').trim();
+            let filamentType = (meta.filament_type || '').trim();
+
+            if (!rawFilamentName) {
+                if (filamentType) {
+                    rawFilamentName = `${t.noProfile} (${filamentType})`;
+                } else {
+                    rawFilamentName = t.otherModels;
+                    filamentType = 'GCODE';
+                }
+            }
+
+            // Разбор имени по регулярным выражениям
+            const parsedInfo = parseFilamentInfo(rawFilamentName);
+
+            // Время последней печати для этой задачи
+            const jobTime = job.end_time || job.start_time || 0;
+
+            // Расход филамента (мм -> метры)
+            const lengthMeters = (job.filament_used || meta.filament_total || 0) / 1000;
+
+            // Расчёт веса в граммах (из метаданных или по плотности)
+            let weightGrams = meta.filament_weight_total || 0;
+            if (!weightGrams || weightGrams <= 0) {
+                weightGrams = lengthMeters * 2.98; // ~3г/м для 1.75мм
+            }
+
+            const printTime = job.print_duration || 0;
+
+            totalWeightGramsAll += weightGrams;
+            totalLengthMetersAll += lengthMeters;
+            totalTimeSecondsAll += printTime;
+
+            if (!spoolsMap[parsedInfo.groupKey]) {
+                spoolsMap[parsedInfo.groupKey] = {
+                    groupKey: parsedInfo.groupKey,
+                    spoolId: parsedInfo.spoolId,
+                    displayName: parsedInfo.displayName,
+                    type: filamentType,
+                    initialWeight: parsedInfo.initialWeight,
+                    jobsCount: 0,
+                    usedGrams: 0,
+                    usedMeters: 0,
+                    lastPrintTime: jobTime
+                };
+            } else {
+                // Обновляем отображаемое имя на более длинное/полное при наличии
+                if (parsedInfo.displayName.length > spoolsMap[parsedInfo.groupKey].displayName.length) {
+                    spoolsMap[parsedInfo.groupKey].displayName = parsedInfo.displayName;
+                }
+                // Фиксируем самую последнюю дату печати для этой катушки
+                if (jobTime > spoolsMap[parsedInfo.groupKey].lastPrintTime) {
+                    spoolsMap[parsedInfo.groupKey].lastPrintTime = jobTime;
+                }
+            }
+
+            spoolsMap[parsedInfo.groupKey].jobsCount++;
+            spoolsMap[parsedInfo.groupKey].usedGrams += weightGrams;
+            spoolsMap[parsedInfo.groupKey].usedMeters += lengthMeters;
+        });
+
+        // Обновление KPI карточек
+        const spoolKeys = Object.keys(spoolsMap);
+        document.getElementById('kpiTotalSpools').innerText = spoolKeys.length;
+        document.getElementById('kpiActiveTypes').innerText = `${t.kpiTypesPrefix}${new Set(spoolKeys.map(k => spoolsMap[k].type)).size}`;
+
+        document.getElementById('kpiTotalWeight').innerText = `${(totalWeightGramsAll / 1000).toFixed(2)} ${t.unitKg}`;
+        document.getElementById('kpiTotalLength').innerText = `${totalLengthMetersAll.toFixed(1)} ${t.unitMeters} (${totalWeightGramsAll.toFixed(0)} ${t.unitGrams})`;
+
+        document.getElementById('kpiTotalJobs').innerText = totalMoonrakerCount;
+
+        const hours = Math.floor(totalTimeSecondsAll / 3600);
+        const minutes = Math.floor((totalTimeSecondsAll % 3600) / 60);
+        document.getElementById('kpiTotalTime').innerText = `${hours}${t.unitHours} ${minutes}${t.unitMinutes}`;
+
+        // Сортировка катушек по времени последней печати (самые СВЕЖИЕ СВЕРХУ)
+        spoolKeys.sort((a, b) => spoolsMap[b].lastPrintTime - spoolsMap[a].lastPrintTime);
+
+        // Заполнение таблицы
+        let html = '';
+
+        spoolKeys.forEach(key => {
+            const item = spoolsMap[key];
+            const initialWeight = item.initialWeight;
+
+            // Расчет остатка
+            const remainingGrams = Math.max(0, initialWeight - item.usedGrams);
+            const metersPerGram = item.usedGrams > 0 ? (item.usedMeters / item.usedGrams) : 0.33;
+            const remainingMeters = remainingGrams * metersPerGram;
+
+            const percentLeft = Math.min(100, Math.max(0, (remainingGrams / initialWeight) * 100));
+
+            let badgeColor = 'bg-primary';
+            if (item.type.includes('PETG')) badgeColor = 'bg-success';
+            if (item.type.includes('PLA')) badgeColor = 'bg-info text-dark';
+            if (item.type.includes('ABS') || item.type.includes('ASA')) badgeColor = 'bg-warning text-dark';
+            if (item.type.includes('TPU')) badgeColor = 'bg-danger';
+
+            let progressColor = 'bg-success';
+            if (percentLeft < 30) progressColor = 'bg-warning';
+            if (percentLeft < 15) progressColor = 'bg-danger';
+
+            const idBadge = item.spoolId ? `<span class="badge-id">${escapeHtml(item.spoolId)}</span>` : '<span class="text-muted small">—</span>';
+            const formattedLastDate = formatDate(item.lastPrintTime);
+
+            html += `
+                <tr>
+                    <td>${idBadge}</td>
+                    <td>
+                        <div class="filament-title">${escapeHtml(item.displayName)}</div>
+                        <div class="last-print-date"><i class="fa-regular fa-clock me-1"></i>${t.lastPrint}${formattedLastDate}</div>
+                    </td>
+                    <td><span class="badge badge-type ${badgeColor}">${escapeHtml(item.type)}</span></td>
+                    <td class="text-center"><span class="badge bg-dark border border-secondary">${item.jobsCount}</span></td>
+                    <td class="fw-bold text-warning">${item.usedGrams.toFixed(1)} ${t.unitGrams}</td>
+                    <td class="text-muted">${item.usedMeters.toFixed(1)} ${t.unitMeters}</td>
+                    <td class="fw-bold text-info">${initialWeight} ${t.unitGrams}</td>
+                    <td>
+                        <span class="fw-bold ${remainingGrams < 100 ? 'text-danger' : 'text-success'}">${remainingGrams.toFixed(1)} ${t.unitGrams}</span>
+                        <small class="text-muted d-block">${remainingMeters.toFixed(1)} ${t.remMeters}</small>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1">
+                                <div class="progress-bar ${progressColor}" role="progressbar" style="width: ${percentLeft}%"></div>
+                            </div>
+                            <span class="small fw-bold" style="width: 40px;">${percentLeft.toFixed(0)}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    function filterTable() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#spoolsTbody tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+</script>
+</body>
+</html>
