@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QIDI Q2 — Учёт расхода филамента по катушкам</title>
+    <!-- Bootstrap 5 CSS & FontAwesome Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous">
+    <style>
+        :root {
+            --bg-dark: #121418;
+            --card-bg: #1c1f26;
+            --border-color: #2d323e;
+            --accent-blue: #0d6efd;
+            --accent-cyan: #38bdf8;
+            --accent-green: #198754;
+            --accent-warning: #ffc107;
+            --accent-danger: #dc3545;
+            --text-main: #f8fafc;
+            --text-sub: #cbd5e1;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding-bottom: 30px;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .kpi-title {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .instructions-box {
+            background-color: #1e2532;
+            border: 1px solid #333d52;
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: var(--text-sub);
+        }
+
+        .instructions-box h6 {
+            color: var(--accent-cyan);
+            font-size: 0.95rem;
+        }
+
+        .instructions-box p {
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        .example-tag {
+            background-color: #11151c;
+            color: #38bdf8;
+            border: 1px solid #2b354a;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .table-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-dark {
+            --bs-table-bg: #1c1f26;
+            --bs-table-hover-bg: #252a36;
+            --bs-table-border-color: #2d323e;
+            color: #e2e8f0;
+        }
+
+        .table-dark thead th {
+            background-color: #14171d !important;
+            border-bottom: 2px solid #2d323e;
+            color: #38bdf8;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .table-dark tbody td {
+            background-color: #1c1f26;
+            border-bottom: 1px solid #2d323e;
+            padding: 10px 12px;
+            vertical-align: middle;
+            color: #e2e8f0;
+        }
+
+        .table-dark tbody tr:hover td {
+            background-color: #242833;
+        }
+
+        .filament-title {
+            color: #ffffff !important;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .color-dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+            flex-shrink: 0;
+        }
+
+        .badge-type {
+            font-size: 0.72rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-id {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background-color: #2b303c;
+            border: 1px solid #3f4758;
+            color: #38bdf8;
+            font-weight: 700;
+            white-space: nowrap !important;
+            display: inline-block;
+        }
+
+        .progress {
+            background-color: #2a2f3d;
+            height: 10px;
+            border-radius: 5px;
+        }
+
+        .youtube-btn {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .youtube-btn:hover {
+            background-color: #ff0000;
+            border-color: #ff0000;
+            color: #fff;
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.4);
+        }
+
+        .last-print-date {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        .error-subtext {
+            color: #ff9999 !important;
+            font-size: 0.88rem;
+        }
+
+        @media (max-width: 992px) {
+            .container-fluid {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            .kpi-card {
+                padding: 12px 14px;
+            }
+            .kpi-title {
+                font-size: 0.72rem;
+            }
+            .kpi-value {
+                font-size: 1.35rem;
+            }
+            .instructions-box {
+                padding: 12px 14px;
+            }
+            .table-dark thead th {
+                padding: 8px 6px !important;
+                font-size: 0.75rem !important;
+            }
+            .table-dark tbody td {
+                padding: 8px 6px !important;
+                font-size: 0.82rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Навбар -->
+<nav class="navbar navbar-expand-lg navbar-dark mb-3">
+    <div class="container-fluid px-3 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2 mb-0 fs-6" href="#">
+                <i class="fa-solid fa-compact-disc text-primary"></i>
+                <span>QIDI Q2 — Учёт расхода филамента</span>
+            </a>
+
+            <a href="https://youtu.be/epEizZNLkAk" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger btn-sm youtube-btn d-flex align-items-center gap-1 ms-1 py-0 px-2" style="font-size: 0.75rem;">
+                <i class="fa-brands fa-youtube"></i>
+                <span>YouTube</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-3">
+
+    <!-- Подсказка по наименованию в слайсере -->
+    <div class="instructions-box mb-3 d-flex align-items-start gap-2">
+        <i class="fa-solid fa-lightbulb text-warning mt-1"></i>
+        <div>
+            <h6 class="fw-bold mb-1"><i class="fa-solid fa-gear me-1"></i>Формат наименования профиля в слайсере (QIDI Studio / OrcaSlicer):</h6>
+            <p>
+                Для группировки укажите имя профиля филамента в формате:
+                <span class="example-tag">id 1 Profile name W1000</span> или
+                <span class="example-tag">id 2 PETG White W750</span>.<br>
+                • <b class="text-info">id 1</b> — уникальный номер катушки.
+                • <b class="text-info">W1000</b> — начальный вес в граммах (по умолчанию 1000г).
+            </p>
+        </div>
+    </div>
+
+    <!-- KPI Карточки суммарной статистики -->
+    <div class="row g-2 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-spool text-info me-1"></i>Катушек в учёте</div>
+                <div class="kpi-value text-info" id="kpiTotalSpools">0</div>
+                <div class="small text-muted mt-1" style="font-size: 0.75rem;" id="kpiActiveTypes">Типов филамента: 0</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-weight-hanging text-warning me-1"></i>Весь расход</div>
+                <div class="kpi-value text-warning" id="kpiTotalWeight">0.00 кг</div>
+                <div class="small text-muted mt-1" style="font-size: 0.75rem;" id="kpiTotalLength">0.0 м</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-print text-success me-1"></i>Всего печатей</div>
+                <div class="kpi-value text-success" id="kpiTotalJobs">0</div>
+                <div class="small text-muted mt-1" style="font-size: 0.75rem;">Записей в Moonraker</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="kpi-card">
+                <div class="kpi-title"><i class="fa-solid fa-clock text-primary me-1"></i>Время работы</div>
+                <div class="kpi-value text-primary" id="kpiTotalTime">0ч 0м</div>
+                <div class="small text-muted mt-1" style="font-size: 0.75rem;">По данным Moonraker API</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Поиск -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-list-check me-2"></i>Расход филамента по катушкам</h6>
+        <div class="d-flex gap-2">
+            <label for="searchInput" class="visually-hidden">Поиск по катушке или ID</label>
+            <input type="text" id="searchInput" aria-label="Поиск по катушке или ID" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Поиск по катушке..." onkeyup="filterTable()" style="max-width: 180px;">
+        </div>
+    </div>
+
+    <!-- Таблица расхода филамента -->
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0" id="spoolsTable">
+                <thead>
+                <tr>
+                    <th style="width: 70px; min-width: 70px;">ID</th>
+                    <th>Катушка / Профиль</th>
+                    <th>Тип</th>
+                    <th class="text-center">Задач</th>
+                    <th>Расход</th>
+                    <th>Старт</th>
+                    <th>Остаток</th>
+                    <th style="min-width: 120px;">Шкала</th>
+                </tr>
+                </thead>
+                <tbody id="spoolsTbody">
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <i class="fa-solid fa-circle-notch fa-spin fa-2x mb-2 text-info d-block"></i>
+                        <span class="text-light fs-6 fw-bold d-block mb-1">Подключение к API Moonraker...</span>
+                        <span class="text-sub small">Загрузка истории...</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- JavaScript логика -->
+<script>
+    let rawHistoryData = [];
+    let totalMoonrakerCount = 0;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Загрузка встроенных данных из ?data= или запуск сетевой выборки
+        const urlParams = new URLSearchParams(location.search);
+        const rawParamData = urlParams.get('data') || (location.hash ? location.hash.substring(1) : '');
+
+        if (rawParamData) {
+            try {
+                const decodedJson = decodeURIComponent(rawParamData);
+                const parsed = JSON.parse(decodedJson);
+                rawHistoryData = parsed.jobs || parsed.result?.jobs || (Array.isArray(parsed) ? parsed : []);
+                totalMoonrakerCount = parsed.count || parsed.result?.count || rawHistoryData.length;
+
+                renderTable();
+                return;
+            } catch (e) {
+                console.warn('Ошибка разбора данных из URL:', e);
+            }
+        }
+
+        fetchHistory();
+    });
+
+    function parseFilamentInfo(fullName) {
+        const nameStr = (fullName || '').trim();
+
+        const idMatch = nameStr.match(/\bid\s*(\d+)\b/i);
+        const spoolId = idMatch ? `ID ${parseInt(idMatch[1], 10)}` : null;
+
+        const weightMatch = nameStr.match(/\bw(\d{3,4})\b/i);
+        const initialWeight = weightMatch ? parseInt(weightMatch[1], 10) : 1000;
+
+        const groupKey = spoolId ? spoolId.toLowerCase() : nameStr.toLowerCase();
+
+        return {
+            groupKey: groupKey,
+            spoolId: spoolId,
+            displayName: nameStr,
+            initialWeight: initialWeight
+        };
+    }
+
+    function formatDate(timestamp) {
+        if (!timestamp || timestamp <= 0) return 'Дата неизвестна';
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    async function fetchHistory() {
+        const tbody = document.getElementById('spoolsTbody');
+        const host = location.hostname || '127.0.0.1';
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <i class="fa-solid fa-circle-notch fa-spin fa-2x mb-2 text-info d-block"></i>
+                    <span class="text-light fs-6 fw-bold d-block mb-1">Подключение к API Moonraker...</span>
+                    <span class="text-sub small">Загрузка истории...</span>
+                </td>
+            </tr>`;
+
+        try {
+            const url = `/server/history/list?limit=10000&order=desc`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Network error: ${response.status}`);
+
+            const data = await response.json();
+            rawHistoryData = data.result?.jobs || [];
+            totalMoonrakerCount = data.result?.count || rawHistoryData.length;
+
+            renderTable();
+
+        } catch (err) {
+            console.warn('HTTP Fetch не удался, пробуем подключение через WebSocket...', err);
+            fetchHistoryViaWebSocket(host);
+        }
+    }
+
+    function fetchHistoryViaWebSocket(host) {
+        const tbody = document.getElementById('spoolsTbody');
+        const wsHost = host || location.hostname || '127.0.0.1';
+
+        let wsClosed = false;
+        const ws = new WebSocket(`ws://${wsHost}/websocket`);
+
+        const timeoutId = setTimeout(() => {
+            if (!wsClosed) {
+                wsClosed = true;
+                try { ws.close(); } catch(e) {}
+                showErrorState();
+            }
+        }, 7000);
+
+        ws.onopen = () => {
+            ws.send(JSON.stringify({
+                jsonrpc: "2.0",
+                method: "server.history.list",
+                params: { limit: 10000, order: "desc" },
+                id: 9912
+            }));
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.id === 9912) {
+                    clearTimeout(timeoutId);
+                    wsClosed = true;
+
+                    if (msg.result) {
+                        rawHistoryData = msg.result.jobs || [];
+                        totalMoonrakerCount = msg.result.count || rawHistoryData.length;
+                        renderTable();
+                    } else {
+                        showErrorState();
+                    }
+                    ws.close();
+                }
+            } catch(e) {
+                console.error('WebSocket JSON parse error', e);
+            }
+        };
+
+        ws.onerror = (e) => {
+            console.error('WebSocket error:', e);
+        };
+
+        ws.onclose = () => {
+            if (!wsClosed) {
+                clearTimeout(timeoutId);
+                showErrorState();
+            }
+        };
+    }
+
+    function showErrorState() {
+        const tbody = document.getElementById('spoolsTbody');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <i class="fa-solid fa-triangle-exclamation fa-2x mb-2 text-danger d-block"></i>
+                    <span class="fw-bold fs-6 d-block mb-1 text-danger">Не удалось загрузить историю с принтера.</span>
+                    <span class="d-block error-subtext">Проверьте подключение к сети или службу Moonraker.</span>
+                </td>
+            </tr>`;
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('spoolsTbody');
+
+        if (rawHistoryData.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <i class="fa-solid fa-box-open fa-2x mb-2 text-info d-block"></i>
+                        <span class="text-light fs-6 fw-bold d-block mb-1">История печати пуста или недоступна</span>
+                        <span class="text-sub small">Задачи печати не найдены в истории Moonraker API.</span>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        const spoolsMap = {};
+        let totalWeightGramsAll = 0;
+        let totalLengthMetersAll = 0;
+        let totalTimeSecondsAll = 0;
+
+        rawHistoryData.forEach(job => {
+            const meta = job.metadata || {};
+
+            let rawFilamentName = (meta.filament_name || '').trim();
+            let filamentType = (meta.filament_type || '').trim();
+
+            let colorHex = '#ffffff';
+            if (Array.isArray(meta.preset_colours) && meta.preset_colours.length > 0 && meta.preset_colours[0]) {
+                colorHex = meta.preset_colours[0];
+            } else if (meta.filament_color) {
+                colorHex = meta.filament_color;
+            } else if (meta.color) {
+                colorHex = meta.color;
+            }
+
+            if (colorHex && !colorHex.startsWith('#')) {
+                colorHex = '#' + colorHex;
+            }
+
+            if (!rawFilamentName) {
+                if (filamentType) {
+                    rawFilamentName = `Филамент (${filamentType})`;
+                } else {
+                    rawFilamentName = 'Прочие / Тестовые модели';
+                    filamentType = 'GCODE';
+                }
+            }
+
+            const parsedInfo = parseFilamentInfo(rawFilamentName);
+            const jobTime = job.end_time || job.start_time || 0;
+            const lengthMeters = (job.filament_used || meta.filament_total || 0) / 1000;
+
+            let weightGrams = meta.filament_weight_total || 0;
+            if (!weightGrams || weightGrams <= 0) {
+                weightGrams = lengthMeters * 2.98;
+            }
+
+            const printTime = job.print_duration || 0;
+
+            totalWeightGramsAll += weightGrams;
+            totalLengthMetersAll += lengthMeters;
+            totalTimeSecondsAll += printTime;
+
+            if (!spoolsMap[parsedInfo.groupKey]) {
+                spoolsMap[parsedInfo.groupKey] = {
+                    groupKey: parsedInfo.groupKey,
+                    spoolId: parsedInfo.spoolId,
+                    displayName: parsedInfo.displayName,
+                    type: filamentType,
+                    colorHex: colorHex || '#ffffff',
+                    initialWeight: parsedInfo.initialWeight,
+                    jobsCount: 0,
+                    usedGrams: 0,
+                    usedMeters: 0,
+                    lastPrintTime: jobTime
+                };
+            } else {
+                if (parsedInfo.displayName.length > spoolsMap[parsedInfo.groupKey].displayName.length) {
+                    spoolsMap[parsedInfo.groupKey].displayName = parsedInfo.displayName;
+                }
+                if ((spoolsMap[parsedInfo.groupKey].colorHex === '#ffffff' || !spoolsMap[parsedInfo.groupKey].colorHex) && colorHex && colorHex !== '#ffffff') {
+                    spoolsMap[parsedInfo.groupKey].colorHex = colorHex;
+                }
+                if (jobTime > spoolsMap[parsedInfo.groupKey].lastPrintTime) {
+                    spoolsMap[parsedInfo.groupKey].lastPrintTime = jobTime;
+                }
+            }
+
+            spoolsMap[parsedInfo.groupKey].jobsCount++;
+            spoolsMap[parsedInfo.groupKey].usedGrams += weightGrams;
+            spoolsMap[parsedInfo.groupKey].usedMeters += lengthMeters;
+        });
+
+        const spoolKeys = Object.keys(spoolsMap);
+        document.getElementById('kpiTotalSpools').innerText = spoolKeys.length;
+        document.getElementById('kpiActiveTypes').innerText = `Типов: ${new Set(spoolKeys.map(k => spoolsMap[k].type)).size}`;
+
+        document.getElementById('kpiTotalWeight').innerText = `${(totalWeightGramsAll / 1000).toFixed(2)} кг`;
+        document.getElementById('kpiTotalLength').innerText = `${totalLengthMetersAll.toFixed(1)} м (${totalWeightGramsAll.toFixed(0)} г)`;
+
+        document.getElementById('kpiTotalJobs').innerText = totalMoonrakerCount;
+
+        const hours = Math.floor(totalTimeSecondsAll / 3600);
+        const minutes = Math.floor((totalTimeSecondsAll % 3600) / 60);
+        document.getElementById('kpiTotalTime').innerText = `${hours}ч ${minutes}м`;
+
+        spoolKeys.sort((a, b) => spoolsMap[b].lastPrintTime - spoolsMap[a].lastPrintTime);
+
+        let html = '';
+
+        spoolKeys.forEach(key => {
+            const item = spoolsMap[key];
+            const initialWeight = item.initialWeight;
+
+            const remainingGrams = Math.max(0, initialWeight - item.usedGrams);
+            const metersPerGram = item.usedGrams > 0 ? (item.usedMeters / item.usedGrams) : 0.33;
+            const remainingMeters = remainingGrams * metersPerGram;
+
+            const percentLeft = Math.min(100, Math.max(0, (remainingGrams / initialWeight) * 100));
+
+            let badgeColor = 'bg-primary';
+            if (item.type.includes('PETG')) badgeColor = 'bg-success';
+            if (item.type.includes('PLA')) badgeColor = 'bg-info text-dark';
+            if (item.type.includes('ABS') || item.type.includes('ASA')) badgeColor = 'bg-warning text-dark';
+            if (item.type.includes('TPU')) badgeColor = 'bg-danger';
+
+            let progressColor = 'bg-success';
+            if (percentLeft < 30) progressColor = 'bg-warning';
+            if (percentLeft < 15) progressColor = 'bg-danger';
+
+            const idBadge = item.spoolId ? `<span class="badge-id">${escapeHtml(item.spoolId)}</span>` : '<span class="text-muted small"></span>';
+            const formattedLastDate = formatDate(item.lastPrintTime);
+            const spoolColor = item.colorHex || '#ffffff';
+
+            html += `
+                <tr>
+                    <td class="text-nowrap">${idBadge}</td>
+                    <td>
+                        <div class="filament-title d-flex align-items-center gap-2">
+                            <span class="color-dot" style="background-color: ${spoolColor};" title="Цвет филамента: ${spoolColor}"></span>
+                            <span>${escapeHtml(item.displayName)}</span>
+                        </div>
+                        <div class="last-print-date"><i class="fa-regular fa-clock me-1"></i>Посл.: ${formattedLastDate}</div>
+                    </td>
+                    <td><span class="badge badge-type ${badgeColor}">${escapeHtml(item.type)}</span></td>
+                    <td class="text-center"><span class="badge bg-dark border border-secondary">${item.jobsCount}</span></td>
+                    <td class="text-nowrap">
+                        <span class="fw-bold text-warning">${item.usedGrams.toFixed(1)} г</span>
+                        <small class="fw-bold d-block text-warning" style="font-size: 0.78rem;">${item.usedMeters.toFixed(1)} м</small>
+                    </td>
+                    <td class="fw-bold text-info text-nowrap">${initialWeight} г</td>
+                    <td class="text-nowrap">
+                        <span class="fw-bold ${remainingGrams < 100 ? 'text-danger' : 'text-success'}">${remainingGrams.toFixed(1)} г</span>
+                        <small class="fw-bold d-block ${remainingGrams < 100 ? 'text-danger' : 'text-success'}" style="font-size: 0.78rem;">${remainingMeters.toFixed(1)} м</small>
+                    </td>
+                    <td style="min-width: 100px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1">
+                                <div class="progress-bar ${progressColor}" role="progressbar" style="width: ${percentLeft}%"></div>
+                            </div>
+                            <span class="small fw-bold" style="width: 36px;">${percentLeft.toFixed(0)}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    function filterTable() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#spoolsTbody tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+</script>
+</body>
+</html>
